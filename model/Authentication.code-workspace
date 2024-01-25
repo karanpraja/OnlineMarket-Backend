@@ -1,0 +1,53 @@
+{
+	"folders": [
+		{
+			"path": "../../MY PROJECTS/react/ROUTER/Authentication"
+		},
+		{
+			"path": "../../MY PROJECTS/react/23.Deployment"
+		},
+		{
+			"path": "../../MY PROJECTS/react/24.Query"
+		},
+		{
+			"path": "../../MY PROJECTS/react/ROUTER"
+		},
+		{
+			"path": "../../MY PROJECTS/react/Redux"
+		},
+		{
+			"path": "../../MY PROJECTS/react/25.Next Project"
+		},
+		{
+			"path": "../../MY PROJECTS/react/27.Adding Animations to react Project"
+		},
+		{
+			"path": "../../MY PROJECTS/react/28.Replacing redux with hooks"
+		},
+		{
+			"path": "../../MY PROJECTS/react/28.testing REact Apps"
+		},
+		{
+			"path": "../../MY PROJECTS/react/ExpenseTrackerProject.js"
+		},
+		{
+			"path": "../../Complete project from scratch"
+		},
+		{
+			"path": "../../Real Estate"
+		},
+		{
+			"path": "../../onlinemarket"
+		},
+		{
+			"path": "../../aaWeb Revision-ScreenShots/nodejs/NODE"
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true,
+		"liveServer.settings.multiRootWorkspaceName": "NODE"
+	}
+}
