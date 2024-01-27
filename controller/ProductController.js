@@ -1,23 +1,50 @@
-const {Product}=require('../model/ProductModel.js')
+const {ProductSchema}=require('../model/ProductModel.js')
 
 exports.createProduct=async (req,res)=>{
     console.log("working")
-    const product= new Product(req.body)
+    const product= new ProductSchema(req.body)
+    console.log(req.body)
     try{
         const response= await product.save()
 res.status(201).json(response)
+// console.log(response)
+
     }catch(err){
  res.status(400).json(err)
     }
-    // res.json({hello:"hello"})
-    // console.log(response)
-    // ((err,doc)=>{
-//         console.log({err,doc})
-//         if(err){
-// res.status(400).json(err)
-//         }else{
-// res.status(201).json(doc)
-//         }
-//     })
 console.log('end')
+}
+
+exports.fetchProductByFilter=async(req,res)=>{
+let query=ProductSchema.find({})
+let totalProductsQuery=ProductSchema.find({})
+if(req.query.category){
+    query=query.find({category:req.query.category})
+    totalProductsQuery=totalProductsQuery.find({category:req.query.category})
+}
+if(req.query.brand){
+    query=query.find({brand:req.query.brand})
+    totalProductsQuery=totalProductsQuery.find({brand:req.query.brand})
+}
+if(req.query._sort&&req.query._order){
+    query=query.sort({[req.query._sort]:req.query._order})
+
+}
+if(req.query._page&&req.query._limit)
+{
+const page=req.query._page
+const pageSize=req.query._limit 
+    query=query.skip(pageSize*(page-1)).limit(pageSize)
+}
+const totalDocs=await totalProductsQuery.count().exec()
+console.log({totalDocs})
+try{
+    const docs=await query.exec()
+    res.set('X-Total-Count',totalDocs)
+    
+res.status(200).json(docs)
+}catch(err){
+res.status(400).json(err)
+}
+
 }
