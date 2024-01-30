@@ -1,13 +1,20 @@
 const express = require("express");
+const server = express();
+const cors=require('cors')
+
 const ProductRouter=require('./routes/ProductRoutes') 
 const BrandRouter=require('./routes/BrandRoutes') 
 const CategoryRouter=require('./routes/CategoryRoutes')
+const UserRouter=require('./routes/AuthRoutes')
 
-const server = express();
 server.use(express.json())//to parse a req body
-server.use('/',ProductRouter.router)
+server.use(cors({
+  exposedHeaders:['X-Total-Count'],
+}))
+server.use('/products',ProductRouter.router)
 server.use('/',BrandRouter.router)
 server.use('/',CategoryRouter.router)
+server.use('/auths',UserRouter.router)
 const mongoose = require("mongoose");
 // const {createProduct}  = require("./controller/ProductController");//it requires one bracket to cause an error
 

@@ -3,9 +3,13 @@
 // import { createProduct } from "../controller/ProductController";
 const Express=require('express')//1
 const router=Express.Router()//what is this?2
-const {createProduct, fetchProductByFilter}=require('../controller/ProductController')
+const {createProduct, fetchProductByFilter, fetchProductById, updateProductById}=require('../controller/ProductController')
 
-router.post('/products',createProduct).get('/products',fetchProductByFilter)
+router
+.post('/',createProduct)
+.get('/',fetchProductByFilter)
+.get('/:id',fetchProductById)
+.patch('/:id',updateProductById)
 
 
 exports.router=router//4
