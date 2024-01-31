@@ -1,15 +1,27 @@
 const express = require("express");
+const server = express();
+const cors=require('cors')
+const mongoose = require("mongoose");
+
 const ProductRouter=require('./routes/ProductRoutes') 
 const BrandRouter=require('./routes/BrandRoutes') 
 const CategoryRouter=require('./routes/CategoryRoutes')
+const AuthRouter=require('./routes/AuthRoutes')
+const UserRouter=require('./routes/UserRoutes')
+const CartRouter=require('./routes/CartRoutes')
 
-const server = express();
 server.use(express.json())//to parse a req body
-server.use('/',ProductRouter.router)
+server.use(cors({
+  exposedHeaders:['X-Total-Count'],
+}))
+server.use('/products',ProductRouter.router)
 server.use('/',BrandRouter.router)
 server.use('/',CategoryRouter.router)
-const mongoose = require("mongoose");
-// const {createProduct}  = require("./controller/ProductController");//it requires one bracket to cause an error
+server.use('/auth',AuthRouter.router)
+// server.use('/auth',UserRouter.router)
+server.use('/cart',CartRouter.router)
+
+// const {createProduct}  = require("./controller/ProductController");//it requires one bracket to cause an console.error();
 
 main().catch((error) => console.log(error));
 async function main() {
