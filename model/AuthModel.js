@@ -4,12 +4,13 @@ const UserSchema=new Schema({
     name:{type:String},
 email:{type:String,required:true,unique:true},
 password:{type:String,required:true},
+role:{type:String,require:true,default:"user"},
 addresses:{type:[Schema.Types.Mixed]},
 orders:{type:[Schema.Types.Mixed]}
 })        
 const virtual=UserSchema.virtual('id')
 virtual.get(function(){
-    return this.id
+    return this._id
 })
 UserSchema.set('toJSON',{
     virtuals:true,
