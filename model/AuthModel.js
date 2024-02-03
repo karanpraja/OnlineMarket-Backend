@@ -5,7 +5,7 @@ const UserSchema=new Schema({
 email:{type:String,required:true,unique:true},
 password:{type:String,required:true},
 role:{type:String,require:true,default:"user"},
-addresses:{type:[Schema.Types.Mixed]},
+addresses:{type:[Schema.Types.Mixed],required:true,default:[]},
 orders:{type:[Schema.Types.Mixed]}
 })        
 const virtual=UserSchema.virtual('id')
@@ -17,4 +17,4 @@ UserSchema.set('toJSON',{
     versionKey:false,
     transform:function(docs,ret){delete ret._id}
 })
-exports.UserSchema=mongoose.model("Auth",UserSchema)
+exports.UserSchema=mongoose.model("User",UserSchema)

@@ -6,15 +6,56 @@ exports.addToCart=async(req,res)=>{
     try {
         const response=await cartItems.save()
         console.log(response)
-        res.status(201).json(response)
+        const docs=await response.populate('product')
+        res.status(201).json(docs)
     } catch (error) {
+        console.log('err')
         res.status(400).json(error)
     }
 }
 exports.fetchCartItemsByUserId=async(req,res)=>{
     const {id}=req.params
     try {
-        const cartItems=await cartSchema.find({user:id}).populate('products').populate('users').exec()
+        const cartItems=await cartSchema.find({user:id}).populate('product').exec()
+        console.log(cartItems)
+        res.status(201).json(cartItems)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+}
+
+exports.updateCartItemById=async(req,res)=>{
+    console.log("updateCartitem")
+    const {id}=req.params
+    console.log(id)
+    try{
+        const updatedCart=await cartSchema.findByIdAndUpdate(id,req.body,{new:true})
+        const docs=await updatedCart.populate('product')
+        console.log(docs)
+        res.status(200).json(docs)
+    }catch(error){
+        console.log("err")
+        res.status(400).json(error)
+    }
+}
+ exports.deleteItemsFromCart=async(req,res)=>{
+    const {id}=req.params
+    console.log(id)
+
+    try{
+        const updatedCart=await cartSchema.findByIdAndDelete(id)
+        res.status(200).json(updatedCart)
+    }catch(error){
+        console.log("error")
+        res.status(400).json(error)
+    }
+}
+
+exports.fetchCartItemsByItemId=async(req,res)=>{
+    const {id}=req.params
+    console.log(id)
+    try {
+        const cartItems=await cartSchema.find({_id:id}).populate('product').exec()
         console.log(cartItems)
         res.status(201).json(cartItems)
     } catch (error) {

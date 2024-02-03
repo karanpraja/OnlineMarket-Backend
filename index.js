@@ -17,8 +17,9 @@ server.use(cors({
 server.use('/products',ProductRouter.router)
 server.use('/',BrandRouter.router)
 server.use('/',CategoryRouter.router)
-server.use('/auth',AuthRouter.router)
-// server.use('/auth',UserRouter.router)
+
+server.use('/users',AuthRouter.router)
+server.use('/user',UserRouter.router)
 server.use('/cart',CartRouter.router)
 
 // const {createProduct}  = require("./controller/ProductController");//it requires one bracket to cause an console.error();

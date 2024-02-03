@@ -4,7 +4,6 @@ const router=express.Router()
 
 router.get('/:id',fetchUserById)
 .patch('/:id',updateLoggedInUserData)
-.get('/',fetchAllUsers)
 
 exports.router=router
 

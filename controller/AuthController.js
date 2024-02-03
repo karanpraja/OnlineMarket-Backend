@@ -15,7 +15,7 @@ exports.createUser=async(req,res)=>{
 
 exports.loginUser=async(req,res)=>{
     // try{
-    const User=await UserSchema.findOne({email:req.body.email},'email password id').exec()
+    const User=await UserSchema.findOne({email:req.body.email},'email password id role addresses').exec()
     console.log("working")
     console.log(User)
     if(!User){
