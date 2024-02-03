@@ -3,7 +3,7 @@ const { createUser, loginUser, getAllUsers } = require('../controller/AuthContro
 const  router=express.Router()
 
 router.post('/signup',createUser)
-.get('/login',loginUser)
+.post('/login',loginUser)
 .get('/',getAllUsers)
 
 exports.router=router
