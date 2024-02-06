@@ -5,11 +5,13 @@ exports.createProduct=async (req,res)=>{
     const product= new ProductSchema(req.body)
     console.log(req.body)
     try{
+        console.log("createProduct")
         const response= await product.save()
 res.status(201).json(response)
 // console.log(response)
 
     }catch(err){
+        console.log("error")
  res.status(400).json(err)
     }
 console.log('end')
@@ -37,7 +39,6 @@ const pageSize=req.query._limit
     query=query.skip(pageSize*(page-1)).limit(pageSize)
 }
 const totalDocs=await totalProductsQuery.count().exec()
-console.log({totalDocs})
 try{
     const docs=await query.exec()
     res.set('X-Total-Count',totalDocs)

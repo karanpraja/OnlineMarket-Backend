@@ -3,7 +3,7 @@ const { CategoryS } = require("../model/CategoryModel")
 exports.fetchCategory=async(req,res)=>{
     try{
     const response=await  CategoryS.find({}).exec();
-console.log(response)
+// console.log(response)
 res.status(201).json(response)
     }catch(err){
         res.status(400).json(err)

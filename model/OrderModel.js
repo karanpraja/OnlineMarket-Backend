@@ -1,26 +1,28 @@
-const mongoose=require("mongoose")
-const {Schema}=mongoose
-const OrderSchema=new Schema({
-   user:{type:Number,required:true},
-   status:{type:String,required:true,default:'pending'},
-   Items:{type:[Schema.Types.Mixed],required:true},
-   selectedAddress:{type:Number,required:true},
-   paymentMethod:{type:String,required:true,default:'cash'},
-   totalAmount:{type:Number,required:true},
-   totalItems:{type:Number,required:true},
-addresses:{type:[Schema.Types.Mixed]}  
-})
-const virtual=OrderSchema.virtual("id")
-virtual.get(function(){
-    this._id
-})
-OrderSchema.set({
-    virtuals:true,
-    versionKey:false,
-    transform:function(docs,ret){delete ret._id}
-})
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+const OrderSchema = new Schema({
+  Items: { type: [Schema.Types.Mixed], required: true },
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  status: { type: String, required: true, default: "pending" },
+  paymentMethod: { type: String, required: true, default: "cash" },
+  totalAmount: { type: Number, required: true },
+  totalItems: { type: Number, required: true },
+  address: { type: [Schema.Types.Mixed], required: true },
+  
+});
+const virtual = OrderSchema.virtual("id");
+virtual.get(function () {
+  this._id;
+});
+OrderSchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform: function (docs, ret) {
+    delete ret._id;
+  },
+});
 
-exports.OrderSchema=mongoose.model("Order",OrderSchema)
+exports.OrderSchema = mongoose.model("Order", OrderSchema);
 
 // {
 //     "user": 9,

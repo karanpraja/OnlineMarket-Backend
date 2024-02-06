@@ -17,7 +17,7 @@ exports.fetchCartItemsByUserId=async(req,res)=>{
     const {id}=req.params
     try {
         const cartItems=await cartSchema.find({user:id}).populate('product').exec()
-        console.log(cartItems)
+        // console.log(cartItems)
         res.status(201).json(cartItems)
     } catch (error) {
         res.status(400).json(error)
@@ -38,13 +38,26 @@ exports.updateCartItemById=async(req,res)=>{
         res.status(400).json(error)
     }
 }
- exports.deleteItemsFromCart=async(req,res)=>{
+ exports.deleteItemFromCart=async(req,res)=>{
     const {id}=req.params
     console.log(id)
-
     try{
+        console.log("deleteItemFromCart")
         const updatedCart=await cartSchema.findByIdAndDelete(id)
         res.status(200).json(updatedCart)
+    }catch(error){
+        console.log("error")
+        res.status(400).json(error)
+    }
+}
+exports.resetCart=async(req,res)=>{
+    const {id}=req.params
+    console.log(id)
+    try{
+        console.log("deleteAllItems")
+        const updatedCart=await cartSchema.deleteMany({user:id})
+        const response="Items deleted:"+updatedCart.deletedCount
+        res.status(200).json(response)
     }catch(error){
         console.log("error")
         res.status(400).json(error)
