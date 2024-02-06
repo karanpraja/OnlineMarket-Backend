@@ -1,10 +1,10 @@
 const { BrandS } = require("../model/BrandModel")
 exports.fetchBrand=async(req,res)=>{
-    console.log('fetchbrand')
+    // console.log('fetchbrand')
     try{
         const response= await BrandS.find({}).exec()
         res.status(201).json(response)
-        console.log(response)
+        // console.log(response)
     }catch(err){
         res.status(400).json(err)
     }

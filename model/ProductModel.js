@@ -28,7 +28,7 @@ const productSchema = new Schema({
   category: { type: String ,required:true },
   imageSrc: { type: String,required:true  },
   images: { type: [String],required:true  },
-  delete: { type: Boolean,required:true  },
+  delete: { type: Boolean,required:true,default:false  },
 });
 // const virtual=productSchema.virtual('id')
 // virtual.get(function(){
