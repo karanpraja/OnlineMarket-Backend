@@ -19,7 +19,7 @@ const UserRouter=require('./routes/UserRoutes')
 const CartRouter=require('./routes/CartRoutes')
 const OrderRouter=require('./routes/OrderRoutes');
 const { UserSchema } = require("./model/AuthModel");
-const { loginUser } = require("./controller/AuthController");
+const { isAuth, sanitizeUser } = require("./services/common");
 
 server.use(session({
   secret: 'keyboard cat',
@@ -33,7 +33,7 @@ server.use(cors({
   exposedHeaders:['X-Total-Count'],
 }))
 server.use(express.json())//to parse a req body
-server.use('/products',ProductRouter.router)
+server.use('/products',isAuth,ProductRouter.router)
 server.use('/',BrandRouter.router)
 server.use('/',CategoryRouter.router)
 server.use('/orders',OrderRouter.router)
@@ -43,51 +43,62 @@ server.use('/cart',CartRouter.router)
 
 // console.log("passport")
 
+
 //pasport strategies
-passport.use('local',new LocalStrategy({ usernameField: 'email' }, async function(username, password, done) {
+passport.use('local',new LocalStrategy({ usernameField: 'email' }, async function(email, password, done) {
   console.log("Passport")
-  console.log({username,password})
+  console.log({email,password})
   //by default passport uses username 
   try{
-    console.log("try")
- const user= await UserSchema.findOne({ email: username }).exec()
- console.log({user})
-      if (!user) {  
-        console.log('1')
-        return done(null,false,{message:"invalid credentials"});
-      }
-      if (user.password===password) 
-          { console.log('2')
-          return  done(null,user); }
-      else{
-        console.log('3')
-        return done(null, false, {message:"invalid credentials"});
-      }
+ const user= await UserSchema.findOne({ email: email }).exec()
+ console.log({indexUser:user})
+ if (!user) {  
+  console.log('1')
+  return done(null,false,{message:"invalid credentials"});
+}
+      crypto.pbkdf2(
+        password,
+         user.salt,
+          310000, 
+          32,
+           'sha256',
+      async function(err, hashedPassword){
+        // if (err) { return cb(err); }
+        console.log(user.password)
+        console.log('abcd')
+        console.log(hashedPassword)
+        if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
+          console.log(user.password,hashedPassword)
+          return done(null, false, {message: 'Incorrect username or password.'});
+        }
+         done(null, sanitizeUser(user));//we have to use done instead of cb 
+      });
 
   }catch(err)  
   {
     console.log("Error")
     return done(err)
   }
- 
   //     if (err) { ; }
   //     if (!user) { return done(null, false); }
   //     if (!user.verifyPassword(password)) 
   //     { return done(null, false); }
   //     return done(null, user);
   //   });
-  
 }));
+
+
 //serialize and deserialize
 passport.serializeUser(function(user, cb) {
   process.nextTick(function() {
     console.log("Serialize user")
-    return cb(null, { id: user.id,username: user.name });
+    return cb(null, { id: user.id,username: user.name});
   });
 });
 
+
 passport.deserializeUser(function(user, cb) {
-  console.log("deserializeUser")
+  console.log("deserializeUser",user)
   process.nextTick(function() {
     return cb(null, user);
   });

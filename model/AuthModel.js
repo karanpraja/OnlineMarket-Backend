@@ -6,7 +6,8 @@ email:{type:String,required:true,unique:true},
 password:{type:String,required:true},
 role:{type:String,require:true,default:"user"},
 addresses:{type:[Schema.Types.Mixed],required:true,default:[]},
-orders:{type:[Schema.Types.Mixed]}
+orders:{type:[Schema.Types.Mixed]},
+salt:Buffer
 })        
 const virtual=UserSchema.virtual('id')
 virtual.get(function(){
