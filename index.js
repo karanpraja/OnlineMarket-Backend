@@ -4,11 +4,20 @@ var LocalStrategy = require('passport-local').Strategy  ;
 var crypto = require('crypto');
 var db = require('./db');
 const server = express();
+var jwt = require('jsonwebtoken');
 const cors=require('cors')
 const mongoose = require("mongoose");
 const session=require('express-session')
 // const csrf=require('csurf')
 var SQLiteStore = require('connect-sqlite3')(session);
+const  JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+
+const SECRET_KEY="SECRET_KEY"
+    var opts = {}
+    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+    opts.secretOrKey = SECRET_KEY;
+// exports.SecretKey='Karan@1234'
 
 
 const ProductRouter=require('./routes/ProductRoutes') 
@@ -33,7 +42,9 @@ server.use(cors({
   exposedHeaders:['X-Total-Count'],
 }))
 server.use(express.json())//to parse a req body
-server.use('/products',isAuth,ProductRouter.router)
+server.use('/products',
+// isAuth(),
+ProductRouter.router)
 server.use('/',BrandRouter.router)
 server.use('/',CategoryRouter.router)
 server.use('/orders',OrderRouter.router)
@@ -47,13 +58,14 @@ server.use('/cart',CartRouter.router)
 //pasport strategies
 passport.use('local',new LocalStrategy({ usernameField: 'email' }, async function(email, password, done) {
   console.log("Passport")
-  console.log({email,password})
+  // console.log({email,password})
   //by default passport uses username 
   try{
+    // console.log(email)
  const user= await UserSchema.findOne({ email: email }).exec()
  console.log({indexUser:user})
  if (!user) {  
-  console.log('1')
+  console.log('!USER')
   return done(null,false,{message:"invalid credentials"});
 }
       crypto.pbkdf2(
@@ -63,15 +75,16 @@ passport.use('local',new LocalStrategy({ usernameField: 'email' }, async functio
           32,
            'sha256',
       async function(err, hashedPassword){
-        // if (err) { return cb(err); }
-        console.log(user.password)
-        console.log('abcd')
-        console.log(hashedPassword)
         if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
+          console.log("timingSageEqual")
           console.log(user.password,hashedPassword)
           return done(null, false, {message: 'Incorrect username or password.'});
         }
-         done(null, sanitizeUser(user));//we have to use done instead of cb 
+        console.log("LoginUser")
+        console.log("SecretKey:"+SECRET_KEY)
+        const token=jwt.sign(sanitizeUser(user),SECRET_KEY)
+        console.log(token)
+         done(null, {id:user.id,role:user.role,token:token});//we have to use done instead of cb 
       });
 
   }catch(err)  
@@ -85,6 +98,35 @@ passport.use('local',new LocalStrategy({ usernameField: 'email' }, async functio
   //     { return done(null, false); }
   //     return done(null, user);
   //   });
+}));
+
+//PASSPORT JWT
+passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
+  console.log("JWT")
+  console.log(jwt_payload)
+  // User.findOne({id: jwt_payload.sub}, function(err, user) {
+  //     if (err) {
+  //         return done(err, false);
+  //     }
+  //     if (user) {
+  //         return done(null, user);
+  //     } else {
+  //         return done(null, false);
+  //         // or you could create a new account
+  //     }
+  // });
+  try{
+    console.log("jwt try")
+    const user=await UserSchema.findById(jwt_payload.id)
+    if (user) {
+              return done(null, sanitizeUser(user));
+          } else {
+              return done(null, false);
+              // or you could create a new account
+          }
+  }catch(err){
+    return done(err,false)
+  }
 }));
 
 
