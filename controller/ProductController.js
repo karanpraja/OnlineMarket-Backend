@@ -41,6 +41,8 @@ const pageSize=req.query._limit
 const totalDocs=await totalProductsQuery.count().exec()
 try{
     const docs=await query.exec()
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.set('X-Total-Count',totalDocs)
     
 res.status(200).json(docs)

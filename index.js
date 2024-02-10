@@ -30,6 +30,7 @@ const OrderRouter=require('./routes/OrderRoutes');
 const { UserSchema } = require("./model/AuthModel");
 const { isAuth, sanitizeUser } = require("./services/common");
 
+server.use(express.static('build'))
 server.use(session({
   secret: 'keyboard cat',
   resave: false, // don't save session if unmodified
@@ -38,9 +39,17 @@ server.use(session({
 }));
 // server.use(csrf());
 server.use(passport.authenticate('session'));
-server.use(cors({
+server.use(cors(
+  {
+    // Access: '*',
+    // Control: '*',
+    // Allow: '*',
+    Origin: '*',
+    // 'Access-Control-Allow-Origin':'*',
+  // origin: 'http://localhost:3000',
   exposedHeaders:['X-Total-Count'],
-}))
+}
+))
 server.use(express.json())//to parse a req body
 server.use('/products',
 // isAuth(),
@@ -118,6 +127,7 @@ passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
   try{
     console.log("jwt try")
     const user=await UserSchema.findById(jwt_payload.id)
+    console.log(user)
     if (user) {
               return done(null, sanitizeUser(user));
           } else {
@@ -133,8 +143,9 @@ passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
 //serialize and deserialize
 passport.serializeUser(function(user, cb) {
   process.nextTick(function() {
+    console.log(user)
     console.log("Serialize user")
-    return cb(null, { id: user.id,username: user.name});
+    return cb(null, { id: user.id,role:user.role});
   });
 });
 
@@ -143,7 +154,7 @@ passport.deserializeUser(function(user, cb) {
   console.log("deserializeUser",user)
   process.nextTick(function() {
     return cb(null, user);
-  });
+});
 });
 
 

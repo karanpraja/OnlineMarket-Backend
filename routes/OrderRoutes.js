@@ -4,7 +4,7 @@ const router=express.Router()
 
 router.post('/',OrderItemsByUser)
 .get('/',filterAllOrdersByUserId)
-.get('/:id',fetchLoggedInUserOrders)
+.get('/id',fetchLoggedInUserOrders)
 .patch('/:id',updateOrders)
 // .get('/filter/:id',filterAllOrdersByUserId)
 
