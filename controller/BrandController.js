@@ -3,6 +3,7 @@ exports.fetchBrand=async(req,res)=>{
     // console.log('fetchbrand')
     try{
         const response= await BrandS.find({}).exec()
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
         res.status(201).json(response)
         // console.log(response)
     }catch(err){

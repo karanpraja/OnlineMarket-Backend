@@ -3,9 +3,9 @@ const { addToCart, fetchCartItemsByUserId, updateCartItemById,  fetchCartItemsBy
 const router=express.Router()
 
 router.post('/',addToCart)
-.get('/:id',fetchCartItemsByUserId)
+.get('/id',fetchCartItemsByUserId)
 .patch('/:id',updateCartItemById)
 .delete('/item/:id',deleteItemFromCart)
-.delete('/items/:id',resetCart)
+.delete('/items/id',resetCart)
 .get('/item/:id',fetchCartItemsByItemId)
 exports.router=router

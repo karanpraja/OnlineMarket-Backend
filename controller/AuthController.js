@@ -2,6 +2,8 @@ const { response } = require("express");
 const { UserSchema } = require("../model/AuthModel");
 const crypto = require("crypto");
 const { sanitizeUser } = require("../services/common");
+const jwt=require('jsonwebtoken');
+const SECRET_KEY="SECRET_KEY"
 
 exports.createUser = async (req, res) => {
   // console.log(req.body)
@@ -10,7 +12,7 @@ exports.createUser = async (req, res) => {
   //     res.status(400).json(err)
   // }
   try {
-    var salt = crypto.randomBytes(16);
+    const salt = crypto.randomBytes(16);
     crypto.pbkdf2(
       req.body.password,
       salt,
@@ -31,7 +33,11 @@ exports.createUser = async (req, res) => {
             console.log(err)
             res.status(400).json(err)
           }else{
-            res.status(201).json(sanitizeUser(user))
+            console.log("LoginSuccesfull")
+var token = jwt.sign(sanitizeUser(user),SECRET_KEY);
+res.cookie('jwt', token, { expires: new Date(Date.now() + 3600000), httpOnly: true })
+console.log(token)
+            res.status(201).json({token})
           }
         //   // res.redirect('/');
         });
@@ -44,9 +50,9 @@ exports.createUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
   // console.log(req)
-
-  
-    res.json(req.body.user);
+const user=req.user
+  console.log({loginUser:req.user})
+    res.cookie('jwt', user.token, { expires: new Date(Date.now() + 3600000), httpOnly: true }).status(201).json({id:user.id,role:user.role,token:user.token});
 
   // console.log(req.user)
 
@@ -67,8 +73,11 @@ exports.loginUser = async (req, res) => {
   // }
 };
 exports.logoutUser = async (req, res) => {
+  const {id}=req.user
+  console.log({l:"logout",user:req.user})
   try {
-    const User = await UserSchema.findOne({ email: req.body.email });
+    const User = await UserSchema.findById(id);
+    console.log({User:User})
     res.status(200).json({ message: "User LoggedOut Successfully" });
   } catch (error) {
     res.status(400).json(error);
@@ -84,3 +93,15 @@ exports.getAllUsers = async (req, res) => {
     res.status(400).json(err);
   }
 };
+exports.checkUser=async(req,res)=>{
+  console.log("CheckUser")
+if(req.user){
+  res.json({status:"Success",user:req.user})
+}else{
+  res.sendStatus(401)
+}
+};
+
+
+
+// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzQ5NmE5YTI0ZmE0NjgzMjRmOGNiOCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzA3MzgyNDQxfQ.h9UaRq4vUKMlUAtz90oKs-eM5NWt1NF5x9V2iDm5FZY"

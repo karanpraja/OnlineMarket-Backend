@@ -14,7 +14,7 @@ exports.addToCart=async(req,res)=>{
     }
 }
 exports.fetchCartItemsByUserId=async(req,res)=>{
-    const {id}=req.params
+    const {id}=req.user
     try {
         const cartItems=await cartSchema.find({user:id}).populate('product').exec()
         // console.log(cartItems)
@@ -51,7 +51,7 @@ exports.updateCartItemById=async(req,res)=>{
     }
 }
 exports.resetCart=async(req,res)=>{
-    const {id}=req.params
+    const {id}=req.user
     console.log(id)
     try{
         console.log("deleteAllItems")

@@ -1,9 +1,7 @@
 const { UserSchema } = require("../model/AuthModel")
 
 exports.fetchUserById=async(req,res)=>{
-    const {id}=req.params
-// console.log("response")
-// console.log(User)
+ const {id}=req.user
 try
 {
 const User=await UserSchema.findById(id)//we don't use second await as response except creating sth 
@@ -14,6 +12,18 @@ res.status(200).json(User)
 res.status(400).json(err)
 }
 }
+exports.removeUserInfo=async(req,res)=>{
+    const {id}=req.user
+   try
+   {
+   const User=await UserSchema.findById(id)//we don't use second await as response except creating sth 
+   res.status(200).json({message:"User info removed successfully!"})
+   }catch(err){
+       console.log("err")
+       console.log(err)
+   res.status(400).json(err)
+   }
+   }
 
 exports.updateLoggedInUserData=async(req,res)=>{
     const {id}=req.params
