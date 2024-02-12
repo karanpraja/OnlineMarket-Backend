@@ -23,7 +23,7 @@ exports.cookieExtractor = function(req) {
         console.log("cookieEx")
         token = req.cookies['jwt'];
     }
-    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzQ5YTJiMTBkOGRkNTZhNDJlZGRiYSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzA3NzI1MTY4fQ.AuUOJKEILO7J5iiYTxiwIbwb0nVun4uvBsikHl0TawQ"
+    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzQ5YTJiMTBkOGRkNTZhNDJlZGRiYSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzA3NzUxODg4fQ.qltqT1p246eS7htGdopip1bHrFc6lYr5g0TpC5gYfRk"
     // console.log("cookies")
     console.log({cookie:token})
 
