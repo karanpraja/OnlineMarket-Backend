@@ -12,14 +12,7 @@ const session=require('express-session')
 var SQLiteStore = require('connect-sqlite3')(session);
 const  JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
-
-const SECRET_KEY="SECRET_KEY"
-    var opts = {}
-    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-    opts.secretOrKey = SECRET_KEY;
-// exports.SecretKey='Karan@1234'
-
-
+const cookieParser = require("cookie-parser");
 const ProductRouter=require('./routes/ProductRoutes') 
 const BrandRouter=require('./routes/BrandRoutes') 
 const CategoryRouter=require('./routes/CategoryRoutes')
@@ -28,9 +21,17 @@ const UserRouter=require('./routes/UserRoutes')
 const CartRouter=require('./routes/CartRoutes')
 const OrderRouter=require('./routes/OrderRoutes');
 const { UserSchema } = require("./model/AuthModel");
-const { isAuth, sanitizeUser } = require("./services/common");
+const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
+const { request } = require("http");
 
-server.use(express.static('build'))
+
+const SECRET_KEY="SECRET_KEY"
+    var opts = {}
+    opts.jwtFromRequest = cookieExtractor;
+    opts.secretOrKey = SECRET_KEY;
+// exports.SecretKey='Karan@1234'
+// server.use(express.static('build'))
+server.use(cookieParser())
 server.use(session({
   secret: 'keyboard cat',
   resave: false, // don't save session if unmodified
@@ -39,36 +40,28 @@ server.use(session({
 }));
 // server.use(csrf());
 server.use(passport.authenticate('session'));
-server.use(cors(
-  {
-    // Access: '*',
-    // Control: '*',
-    // Allow: '*',
-    Origin: '*',
-    // 'Access-Control-Allow-Origin':'*',
-  // origin: 'http://localhost:3000',
-  exposedHeaders:['X-Total-Count'],
-}
-))
+server.use(cors({
+  origin: '*',
+  exposedHeaders: ['X-Total-Count'],
+}))
 server.use(express.json())//to parse a req body
 server.use('/products',
-// isAuth(),
 ProductRouter.router)
 server.use('/',BrandRouter.router)
 server.use('/',CategoryRouter.router)
-server.use('/orders',OrderRouter.router)
+server.use('/orders',isAuth(),OrderRouter.router)
 server.use('/users',AuthRouter.router)
-server.use('/user',UserRouter.router)
-server.use('/cart',CartRouter.router)
+server.use('/user',isAuth(),UserRouter.router)
+server.use('/cart',isAuth(),CartRouter.router)
 
 // console.log("passport")
+
 
 
 //pasport strategies
 passport.use('local',new LocalStrategy({ usernameField: 'email' }, async function(email, password, done) {
   console.log("Passport")
-  // console.log({email,password})
-  //by default passport uses username 
+  // console.log({email,password}) by default passport uses username 
   try{
     // console.log(email)
  const user= await UserSchema.findOne({ email: email }).exec()
@@ -91,9 +84,9 @@ passport.use('local',new LocalStrategy({ usernameField: 'email' }, async functio
         }
         console.log("LoginUser")
         console.log("SecretKey:"+SECRET_KEY)
-        const token=jwt.sign(sanitizeUser(user),SECRET_KEY)
+        let token=jwt.sign(sanitizeUser(user),SECRET_KEY)
         console.log(token)
-         done(null, {id:user.id,role:user.role,token:token});//we have to use done instead of cb 
+         done(null, {id:user.id,role:user.role,token:token});
       });
 
   }catch(err)  
@@ -101,12 +94,6 @@ passport.use('local',new LocalStrategy({ usernameField: 'email' }, async functio
     console.log("Error")
     return done(err)
   }
-  //     if (err) { ; }
-  //     if (!user) { return done(null, false); }
-  //     if (!user.verifyPassword(password)) 
-  //     { return done(null, false); }
-  //     return done(null, user);
-  //   });
 }));
 
 //PASSPORT JWT
@@ -127,7 +114,7 @@ passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
   try{
     console.log("jwt try")
     const user=await UserSchema.findById(jwt_payload.id)
-    console.log(user)
+    console.log("jwtuser")
     if (user) {
               return done(null, sanitizeUser(user));
           } else {

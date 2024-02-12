@@ -36,8 +36,7 @@ exports.createUser = async (req, res) => {
             console.log("LoginSuccesfull")
 var token = jwt.sign(sanitizeUser(user),SECRET_KEY);
 res.cookie('jwt', token, { expires: new Date(Date.now() + 3600000), httpOnly: true })
-console.log(token)
-            res.status(201).json({token})
+            res.status(201).json(sanitizeUser(user))
           }
         //   // res.redirect('/');
         });
@@ -49,10 +48,11 @@ console.log(token)
 };
 
 exports.loginUser = async (req, res) => {
-  // console.log(req)
+  console.log("loginUser")
 const user=req.user
   console.log({loginUser:req.user})
-    res.cookie('jwt', user.token, { expires: new Date(Date.now() + 3600000), httpOnly: true }).status(201).json({id:user.id,role:user.role,token:user.token});
+  // user.token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzQ5YTJiMTBkOGRkNTZhNDJlZGRiYSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzA3NTcyNzM0fQ.9iHoSZZkoV7BakCMRKkQCavLjsjrc1yEPfZwxGrV3dI"
+    res.cookie('jwt', user.token, { expires: new Date(Date.now() + 10800000), httpOnly: true }).status(201).json({id:user.id,role:user.role,token:user.token});
 
   // console.log(req.user)
 
@@ -78,7 +78,8 @@ exports.logoutUser = async (req, res) => {
   try {
     const User = await UserSchema.findById(id);
     console.log({User:User})
-    res.status(200).json({ message: "User LoggedOut Successfully" });
+    
+    res.clearCookie('jwt').status(200).json({ message: "User LoggedOut Successfully" });
   } catch (error) {
     res.status(400).json(error);
   }
@@ -87,7 +88,7 @@ exports.logoutUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const response = await UserSchema.find({}).exec();
-    console.log(response);
+    // console.log(response);
     res.status(200).json(response);
   } catch (err) {
     res.status(400).json(err);
@@ -96,7 +97,7 @@ exports.getAllUsers = async (req, res) => {
 exports.checkUser=async(req,res)=>{
   console.log("CheckUser")
 if(req.user){
-  res.json({status:"Success",user:req.user})
+  res.json(req.user)
 }else{
   res.sendStatus(401)
 }

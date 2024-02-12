@@ -42,7 +42,7 @@ exports.fetchLoggedInUserOrders=async(req,res)=>{
     const {id}=req.user
     try{
     const response=await OrderSchema.find({user:id})
-        console.log(response)
+        // console.log(response)
         res.status(200).json(response)
     }catch(err){
         res.status(400).json(err)
