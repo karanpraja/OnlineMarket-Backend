@@ -2,7 +2,7 @@ const { cartSchema } = require("../model/CartModel")
 
 exports.addToCart=async(req,res)=>{
     const cartItems=new cartSchema(req.body)
-    console.log(cartItems)
+    // console.log(cartItems)
     try {
         const response=await cartItems.save()
         console.log(response)

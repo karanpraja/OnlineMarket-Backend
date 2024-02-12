@@ -5,18 +5,16 @@ exports.fetchUserById=async(req,res)=>{
 try
 {
 const User=await UserSchema.findById(id)//we don't use second await as response except creating sth 
-res.status(200).json(User)
+res.status(200).json({id:User.id,role:User.role,addresses:User.addresses,email:User.email})
 }catch(err){
     console.log("err")
     console.log(err)
 res.status(400).json(err)
 }
 }
-exports.removeUserInfo=async(req,res)=>{
-    const {id}=req.user
+exports.removeUserInfo=async(req,res)=>{    
    try
    {
-   const User=await UserSchema.findById(id)//we don't use second await as response except creating sth 
    res.status(200).json({message:"User info removed successfully!"})
    }catch(err){
        console.log("err")
