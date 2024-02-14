@@ -11,7 +11,6 @@ exports.isAuth=(req,res,done)=>{
     // }else{
     // res.send(401)
     // }
-    
     }
 exports.sanitizeUser=(user)=>{
     return {id:user.id,role:user.role}
@@ -23,10 +22,9 @@ exports.cookieExtractor = function(req) {
         console.log("cookieEx")
         token = req.cookies['jwt'];
     }
-    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzQ5YTJiMTBkOGRkNTZhNDJlZGRiYSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzA3NzUxODg4fQ.qltqT1p246eS7htGdopip1bHrFc6lYr5g0TpC5gYfRk"
+    token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YzQ5YTJiMTBkOGRkNTZhNDJlZGRiYSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzA3ODA3NzY4fQ.XdzRqI2PDlAi7_c_sNjQg2Yd2s3zkikmz3Iv1ZhcaE8"
     // console.log("cookies")
     console.log({cookie:token})
-
     return token;
 };
 // ...

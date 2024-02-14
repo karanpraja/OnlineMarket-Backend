@@ -20,6 +20,7 @@ const AuthRouter=require('./routes/AuthRoutes')
 const UserRouter=require('./routes/UserRoutes')
 const CartRouter=require('./routes/CartRoutes')
 const OrderRouter=require('./routes/OrderRoutes');
+const StripeRouter=require('./routes/StripeRoutes');
 const { UserSchema } = require("./model/AuthModel");
 const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const { request } = require("http");
@@ -53,6 +54,8 @@ server.use('/orders',isAuth(),OrderRouter.router)
 server.use('/users',AuthRouter.router)
 server.use('/user',isAuth(),UserRouter.router)
 server.use('/cart',isAuth(),CartRouter.router)
+// server.use('/stripecheckout',StripeRouter.router)
+
 
 // console.log("passport")
 
@@ -145,35 +148,34 @@ passport.deserializeUser(function(user, cb) {
 });
 
 //Payment Intent
-// This is your test secret API key.
-const stripe = require("stripe")('sk_test_51OdmoiSB02QNHAyRyZHy5mn65Rjm1ocUHVMBP4Bp7IBWFnX2TVuRjHqhRvf5mhObExT4QeJ4TcSnrgIbG4oLFhl300EzEIN3DI');
 
-const calculateOrderAmount = (items) => {
-  // Replace this constant with a calculation of the order's amount
-  // Calculate the order total on the server to prevent
-  // people from directly manipulating the amount on the client
-  return 1400;
-};
-
+const stripe = require("stripe")('sk_test_51OdmoiSB02QNHAyRyZHy5mn65Rjm1ocUHVMBP4Bp7IBWFnX2TVuRjHqhRvf5mhObExT4QeJ4TcSnrgIbG4oLFhl300EzEIN3DI ');
 server.post("/create-payment-intent", async (req, res) => {
-  const { items } = req.body;
+  console.log(req.body)
+  const { totalAmount ,id} = req.body;
 
   // Create a PaymentIntent with the order amount and currency
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: calculateOrderAmount(items),
+    amount: totalAmount*100,
     currency: "inr",
+    // payment_method:"card"
     // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
     automatic_payment_methods: {
       enabled: true,
     },
+    // payment_method_configuration: 'pmc_123',
+    // metadata:{
+    //   id,
+    //   payment_method
+    // }
   });
+
 
   res.send({
     clientSecret: paymentIntent.client_secret,
   });
 });
 
-//payment intent ends here
 main().catch((error) => console.log(error));
 async function main() {
   await mongoose.connect("mongodb://127.0.0.1:27017/ecommerce"); 
