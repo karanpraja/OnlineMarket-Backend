@@ -24,6 +24,7 @@ const StripeRouter=require('./routes/StripeRoutes');
 const { UserSchema } = require("./model/AuthModel");
 const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const { request } = require("http");
+const {v5:uuid}=require('uuid')
 
 
 const SECRET_KEY="SECRET_KEY"
@@ -151,29 +152,34 @@ passport.deserializeUser(function(user, cb) {
 
 const stripe = require("stripe")('sk_test_51OdmoiSB02QNHAyRyZHy5mn65Rjm1ocUHVMBP4Bp7IBWFnX2TVuRjHqhRvf5mhObExT4QeJ4TcSnrgIbG4oLFhl300EzEIN3DI ');
 server.post("/create-payment-intent", async (req, res) => {
-  console.log(req.body)
-  const { totalAmount ,id} = req.body;
-
-  // Create a PaymentIntent with the order amount and currency
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: totalAmount*100,
-    currency: "inr",
-    // payment_method:"card"
-    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
-    automatic_payment_methods: {
-      enabled: true,
-    },
-    // payment_method_configuration: 'pmc_123',
-    // metadata:{
-    //   id,
-    //   payment_method
-    // }
+  // console.log(req.body)
+ const totalAmount=1000
+  // // Create a PaymentIntent with the order amount and currency Math.round(Math.random()*10)
+  // const paymentIntent = await stripe.paymentIntents.create({
+  //   amount: totalAmount*100,
+  //   currency: "inr",
+  //   automatic_payment_methods: {
+  //     enabled: true,
+  //   },
+  // });
+  // res.send({
+  //   clientSecret: paymentIntent.client_secret,
+  // });////////////
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+        price: 'price_1OkkRZSB02QNHAyRRT2H1Ga4',
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `http://localhost:3000/checkorder/${totalAmount}`,
+    cancel_url: `http://localhost:3000/errorpage`,
   });
 
+  res.json( session.url);
 
-  res.send({
-    clientSecret: paymentIntent.client_secret,
-  });
 });
 
 main().catch((error) => console.log(error));
@@ -186,5 +192,5 @@ server.get("/", (req, res) => {
 });
 // server.post("/products",createProduct );
 server.listen(8080, () => {
-  console.log("server working");
+  console.log("8080 server working");
 });

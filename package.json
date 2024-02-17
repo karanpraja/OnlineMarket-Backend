@@ -25,6 +25,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "stripe": "^14.16.0"
+    "stripe": "^14.16.0",
+    "uuid": "^9.0.1"
   }
 }
