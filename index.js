@@ -152,8 +152,9 @@ passport.deserializeUser(function(user, cb) {
 
 const stripe = require("stripe")('sk_test_51OdmoiSB02QNHAyRyZHy5mn65Rjm1ocUHVMBP4Bp7IBWFnX2TVuRjHqhRvf5mhObExT4QeJ4TcSnrgIbG4oLFhl300EzEIN3DI ');
 server.post("/create-payment-intent", async (req, res) => {
-  // console.log(req.body)
- const totalAmount=1000
+  console.log({req: req.body})
+  const {totalAmount,id,quantity}=req.body
+ 
   // // Create a PaymentIntent with the order amount and currency Math.round(Math.random()*10)
   // const paymentIntent = await stripe.paymentIntents.create({
   //   amount: totalAmount*100,
@@ -165,16 +166,29 @@ server.post("/create-payment-intent", async (req, res) => {
   // res.send({
   //   clientSecret: paymentIntent.client_secret,
   // });////////////
+  const product = await stripe.products.create({
+    name: `Your order id is ${id}`,
+  });
+  console.log({product:product})
+  const price = await stripe.prices.create({
+    product: product.id,
+    unit_amount: totalAmount*8400,
+    currency: 'INR',
+  });
+  console.log({price:price})
   const session = await stripe.checkout.sessions.create({
     line_items: [
       {
         // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-        price: 'price_1OkkRZSB02QNHAyRRT2H1Ga4',
-        quantity: 1,
+        price: price.id,
+        quantity: quantity,
       },
     ],
+    // customer: 'cs_test_MlZAaTXUMHjWZ7DcXjusJnDU4MxPalbtL5eYrmS2GKxqscDtpJq8QM0k',
+    customer_email: 'karan4@gmail.com', // Add customer's email address headers
+    billing_address_collection: 'required', // Prompt the customer to provide their billing address
     mode: 'payment',
-    success_url: `http://localhost:3000/checkorder/${totalAmount}`,
+    success_url: `http://localhost:3000/checkorder/${id}`,
     cancel_url: `http://localhost:3000/errorpage`,
   });
 
