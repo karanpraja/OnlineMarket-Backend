@@ -177,8 +177,6 @@ passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
     return done(err,false)
   }
 }));
-
-
 //serialize and deserialize
 passport.serializeUser(function(user, cb) {
   process.nextTick(function() {
@@ -195,7 +193,6 @@ passport.deserializeUser(function(user, cb) {
     return cb(null, user);
 });
 });
-
 //Payment Intent
 
 const stripe = require("stripe")(
@@ -204,18 +201,6 @@ const stripe = require("stripe")(
 server.post("/create-payment-intent", async (req, res) => {
   console.log({req: req.body})
   const {totalAmount,id,quantity}=req.body
- 
-  // // Create a PaymentIntent with the order amount and currency Math.round(Math.random()*10)
-  // const paymentIntent = await stripe.paymentIntents.create({
-  //   amount: totalAmount*100,
-  //   currency: "inr",
-  //   automatic_payment_methods: {
-  //     enabled: true,
-  //   },
-  // });
-  // res.send({
-  //   clientSecret: paymentIntent.client_secret,
-  // });////////////
   const product = await stripe.products.create({
     name: `Your order id is ${id}`,
   });
