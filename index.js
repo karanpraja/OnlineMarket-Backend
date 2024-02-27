@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require("express");
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy  ;
@@ -8,6 +10,7 @@ var jwt = require('jsonwebtoken');
 const cors=require('cors')
 const mongoose = require("mongoose");
 const session=require('express-session')
+const endpointSecret = 'whsec_...';
 // const csrf=require('csurf')
 var SQLiteStore = require('connect-sqlite3')(session);
 const  JwtStrategy = require('passport-jwt').Strategy;
@@ -24,17 +27,60 @@ const StripeRouter=require('./routes/StripeRoutes');
 const { UserSchema } = require("./model/AuthModel");
 const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const { request } = require("http");
+const {v5:uuid}=require('uuid')
 
 
-const SECRET_KEY="SECRET_KEY"
+const SECRET_KEY=process.env.SECRET_KEY
     var opts = {}
     opts.jwtFromRequest = cookieExtractor;
     opts.secretOrKey = SECRET_KEY;
-// exports.SecretKey='Karan@1234'
-// server.use(express.static('build'))
+//webhook
+server.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
+  let event = request.body;
+  // Only verify the event if you have an endpoint secret defined.
+  // Otherwise use the basic event deserialized with JSON.parse
+  if (endpointSecret) {
+    // Get the signature sent by Stripe
+    const signature = request.headers['stripe-signature'];
+    try {
+      event = stripe.webhooks.constructEvent(
+        request.body,
+        signature,
+        endpointSecret
+      );
+    } catch (err) {
+      console.log(`⚠️  Webhook signature verification failed.`, err.message);
+      return response.sendStatus(400);
+    }
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+      console.log(paymentIntent)
+      // Then define and call a method to handle the successful payment intent.
+      // handlePaymentIntentSucceeded(paymentIntent);
+      break;
+    case 'payment_method.attached':
+      const paymentMethod = event.data.object;
+      // Then define and call a method to handle the successful attachment of a PaymentMethod.
+      // handlePaymentMethodAttached(paymentMethod);
+      break;
+    default:
+      // Unexpected event type
+      console.log(`Unhandled event type ${event.type}.`);
+  }
+
+  // Return a 200 response to acknowledge receipt of the event
+  response.send();
+});
+    // exports.SecretKey='Karan@1234'
+server.use(express.static('build'))
 server.use(cookieParser())
 server.use(session({
-  secret: 'keyboard cat',
+  secret: process.env.SECRET,
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
   store: new SQLiteStore({ db: 'sessions.db', dir: './var/db' })
@@ -43,9 +89,10 @@ server.use(session({
 server.use(passport.authenticate('session'));
 server.use(cors({
   origin: '*',
-  exposedHeaders: ['X-Total-Count'],
+    exposedHeaders: ['X-Total-Count'],
 }))
 server.use(express.json())//to parse a req body
+// server.use(express.raw({type: 'application/json'}))
 server.use('/products',
 ProductRouter.router)
 server.use('/',BrandRouter.router)
@@ -54,6 +101,8 @@ server.use('/orders',isAuth(),OrderRouter.router)
 server.use('/users',AuthRouter.router)
 server.use('/user',isAuth(),UserRouter.router)
 server.use('/cart',isAuth(),CartRouter.router)
+
+
 // server.use('/stripecheckout',StripeRouter.router)
 
 
@@ -149,42 +198,68 @@ passport.deserializeUser(function(user, cb) {
 
 //Payment Intent
 
-const stripe = require("stripe")('sk_test_51OdmoiSB02QNHAyRyZHy5mn65Rjm1ocUHVMBP4Bp7IBWFnX2TVuRjHqhRvf5mhObExT4QeJ4TcSnrgIbG4oLFhl300EzEIN3DI ');
+const stripe = require("stripe")(
+  process.env.STRIPE_SECRET_KEY
+);
 server.post("/create-payment-intent", async (req, res) => {
-  console.log(req.body)
-  const { totalAmount ,id} = req.body;
-
-  // Create a PaymentIntent with the order amount and currency
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: totalAmount*100,
-    currency: "inr",
-    // payment_method:"card"
-    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
-    automatic_payment_methods: {
-      enabled: true,
-    },
-    // payment_method_configuration: 'pmc_123',
-    // metadata:{
-    //   id,
-    //   payment_method
-    // }
+  console.log({req: req.body})
+  const {totalAmount,id,quantity}=req.body
+ 
+  // // Create a PaymentIntent with the order amount and currency Math.round(Math.random()*10)
+  // const paymentIntent = await stripe.paymentIntents.create({
+  //   amount: totalAmount*100,
+  //   currency: "inr",
+  //   automatic_payment_methods: {
+  //     enabled: true,
+  //   },
+  // });
+  // res.send({
+  //   clientSecret: paymentIntent.client_secret,
+  // });////////////
+  const product = await stripe.products.create({
+    name: `Your order id is ${id}`,
+  });
+  console.log({product:product})
+  const price = await stripe.prices.create({
+    product: product.id,
+    unit_amount: totalAmount*8400,
+    currency: 'INR',
+  });
+  console.log({price:price})
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+        price: price.id,
+        quantity: quantity,
+      },
+    ],
+    // customer: 'cs_test_MlZAaTXUMHjWZ7DcXjusJnDU4MxPalbtL5eYrmS2GKxqscDtpJq8QM0k',
+    customer_email: 'karan4@gmail.com', // Add customer's email address headers
+    billing_address_collection: 'required', // Prompt the customer to provide their billing address
+    mode: 'payment',
+    success_url: `${process.env.HOST}/checkorder/${id}`,
+    cancel_url: `${process.env.HOST}/errorpage`,
+    metadata:{
+      orderId:id
+    }
   });
 
+  res.json( session.url);
 
-  res.send({
-    clientSecret: paymentIntent.client_secret,
-  });
 });
+
+
 
 main().catch((error) => console.log(error));
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/ecommerce"); 
+  await mongoose.connect(process.env.MONGO_URL); 
   console.log("database connected!");
 }
 server.get("/", (req, res) => {
   res.json({ status: "Server working properly" });
 });
 // server.post("/products",createProduct );
-server.listen(8080, () => {
-  console.log("server working");
+server.listen(process.env.PORT, () => {
+  console.log("8080 server working");
 });
