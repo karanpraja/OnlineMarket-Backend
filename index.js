@@ -28,7 +28,7 @@ const { UserSchema } = require("./model/AuthModel");
 const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const { request } = require("http");
 const {v5:uuid}=require('uuid')
-
+const path=require('path')
 
 const SECRET_KEY=process.env.SECRET_KEY
     var opts = {}
@@ -77,7 +77,7 @@ server.post('/webhook', express.raw({type: 'application/json'}), (request, respo
   response.send();
 });
     // exports.SecretKey='Karan@1234'
-server.use(express.static('build'))
+server.use(express.static(path.resolve(__dirname,'build')))
 server.use(cookieParser())
 server.use(session({
   secret: process.env.SECRET,
@@ -246,5 +246,5 @@ server.get("/", (req, res) => {
 });
 // server.post("/products",createProduct );
 server.listen(process.env.PORT, () => {
-  console.log("8080 server working");
+  console.log(" server working");
 });
