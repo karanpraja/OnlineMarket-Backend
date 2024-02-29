@@ -28,7 +28,7 @@ const { UserSchema } = require("./model/AuthModel");
 const { isAuth, sanitizeUser, cookieExtractor } = require("./services/common");
 const { request } = require("http");
 const {v5:uuid}=require('uuid')
-
+const path=require('path')
 
 const SECRET_KEY=process.env.SECRET_KEY
     var opts = {}
@@ -77,7 +77,7 @@ server.post('/webhook', express.raw({type: 'application/json'}), (request, respo
   response.send();
 });
     // exports.SecretKey='Karan@1234'
-server.use(express.static('build'))
+server.use(express.static(path.resolve(__dirname,'build')))
 server.use(cookieParser())
 server.use(session({
   secret: process.env.SECRET,
@@ -177,8 +177,6 @@ passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
     return done(err,false)
   }
 }));
-
-
 //serialize and deserialize
 passport.serializeUser(function(user, cb) {
   process.nextTick(function() {
@@ -195,7 +193,6 @@ passport.deserializeUser(function(user, cb) {
     return cb(null, user);
 });
 });
-
 //Payment Intent
 
 const stripe = require("stripe")(
@@ -204,18 +201,6 @@ const stripe = require("stripe")(
 server.post("/create-payment-intent", async (req, res) => {
   console.log({req: req.body})
   const {totalAmount,id,quantity}=req.body
- 
-  // // Create a PaymentIntent with the order amount and currency Math.round(Math.random()*10)
-  // const paymentIntent = await stripe.paymentIntents.create({
-  //   amount: totalAmount*100,
-  //   currency: "inr",
-  //   automatic_payment_methods: {
-  //     enabled: true,
-  //   },
-  // });
-  // res.send({
-  //   clientSecret: paymentIntent.client_secret,
-  // });////////////
   const product = await stripe.products.create({
     name: `Your order id is ${id}`,
   });
@@ -261,5 +246,5 @@ server.get("/", (req, res) => {
 });
 // server.post("/products",createProduct );
 server.listen(process.env.PORT, () => {
-  console.log("8080 server working");
+  console.log(" server working");
 });
